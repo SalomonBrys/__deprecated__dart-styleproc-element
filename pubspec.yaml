@@ -1,5 +1,5 @@
 name: styleproc_element
-version: 0.1.0
+version: 0.1.1
 author: Salomon BRYS <salomon.brys@gmail.com>
 description: Easily integrates any css processor inside polymer.dart
 homepage: https://github.com/SalomonBrys/dart-styleproc-element
