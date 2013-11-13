@@ -13,6 +13,10 @@ class _CachedStyle {
   _CachedStyle(this.style);
 }
 
+// This should not exist and is a horrible workaround because of
+// https://groups.google.com/a/dartlang.org/forum/#!topic/web-ui/AsdANftHuzQ
+bool _isDart() => document.getElementsByTagName("script").where((s) => s.src.endsWith(".dart.js")).isEmpty;
+
 abstract class StyleProcessor implements Polymer {
 
   String _shimShadowDomStyling(String txt) {
@@ -51,7 +55,10 @@ abstract class StyleProcessor implements Polymer {
   }
 
   Future<_CachedStyle> _compileStyleHTTP(Element e, [_CachedStyle cache]) {
-    return HttpRequest.getString(e.attributes["src"]).then((String text) {
+    String path = e.attributes["src"];
+    if (e.attributes.containsKey("path") && _isDart())
+      path = e.attributes["path"] + "/" + path;
+    return HttpRequest.getString(path).then((String text) {
       StyleElement style = null;
       if (cache != null) {
         if (cache.text == text)
