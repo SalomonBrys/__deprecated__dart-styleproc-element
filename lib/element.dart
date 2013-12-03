@@ -2,8 +2,8 @@
 library styleproc_element;
 
 import 'dart:html';
-import 'dart:js' as djs;
 import 'dart:async';
+import 'dart:math';
 
 import 'package:polymer/polymer.dart';
 
@@ -18,24 +18,17 @@ class _CachedStyle {
 bool _isDart() => document.getElementsByTagName("script").where((s) => s.src.endsWith(".dart.js")).isEmpty;
 
 abstract class StyleProcessor implements Polymer {
+  String classScope;
 
-  String _shimShadowDomStyling(String txt) {
-    if (djs.context == null) return txt;
-
-    var platform = djs.context['Platform'];
-    if (platform == null) return txt;
-
-    var shadowCss = platform['ShadowCSS'];
-    if (shadowCss == null) return txt;
-
-    var shimShadowDOMStyling2 = shadowCss['shimShadowDOMStyling2'];
-    if (shimShadowDOMStyling2 == null) return txt;
-
-//    if (js.context.window.ShadowDOMPolyfill == null) return txt;
-
-    return shimShadowDOMStyling2.apply(shadowCss, [txt, localName]);
+  String _rdStr(final int n) {
+    Random rd = new Random();
+    const L = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; 
+    StringBuffer buf = new StringBuffer();
+    for (var i = 0; i < n; ++i)
+      buf.write(L[rd.nextInt(L.length)]);
+    return buf.toString();
   }
-
+  
   Future<StyleElement> _compileStyle(String txt, [StyleElement style]) {
     if (style == null) {
       style = new StyleElement()
@@ -43,9 +36,9 @@ abstract class StyleProcessor implements Polymer {
       ;
       shadowRoot.append(style);
     }
-
-    return compileStyleText(txt).then((css) {
-      style.text = _shimShadowDomStyling(css);
+    
+    return compileStyleText(txt, classScope).then((css) {
+      style.text = css;
       return style;
     },
     onError: (e) {
@@ -93,6 +86,9 @@ abstract class StyleProcessor implements Polymer {
   }
 
   void compileStyle() {
+    classScope = "roo" + _rdStr(21);
+    classes.add(classScope);
+
     ensureFoucPrevented();
 
     this.classes.add("styleproc-wait");
@@ -122,10 +118,10 @@ abstract class StyleProcessor implements Polymer {
     if (foucStyle == null) {
       foucStyle = new StyleElement()
         ..type = "text/css"
-        ..text = _shimShadowDomStyling("""
-            $styleElementName { display: none; }
-            .styleproc-wait { display: none; }
-          """)
+        ..text = """
+            .$classScope $styleElementName { display: none; }
+            .$classScope .styleproc-wait { display: none; }
+          """
       ;
       shadowRoot.append(foucStyle);
     }
@@ -133,7 +129,7 @@ abstract class StyleProcessor implements Polymer {
 
   String get styleElementName;
 
-  Future<String> compileStyleText(String txt);
+  Future<String> compileStyleText(String txt, String classScope);
 }
 
 abstract class StyleProcessorElement extends PolymerElement with StyleProcessor {
