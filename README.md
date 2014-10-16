@@ -1,3 +1,8 @@
+DEPRECATED
+==========
+
+This package is no longer maintained and is **not compatible with polymer's last versions**.
+
 # Integration of CSS preprocessor in polymer.dart
 
 ## Introduction
